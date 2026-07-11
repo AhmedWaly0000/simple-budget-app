@@ -53,6 +53,45 @@
   }
   .value.income { color: var(--income); }
   .value.expense { color: var(--expense); }
+  .muted-total {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .accounts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .account-card { text-align: center; }
+  .account-input-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    margin-top: 6px;
+  }
+  .account-input-wrap .dollar-sign {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .account-input-wrap input {
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    width: 100%;
+    padding: 4px 0;
+  }
+  .account-input-wrap input:focus { outline: none; }
+  .account-input-wrap input::-webkit-outer-spin-button,
+  .account-input-wrap input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
   .card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -189,6 +228,103 @@
   }
   .cat-row:last-child { border-bottom: none; }
 
+  .monthly-card { margin-top: 24px; }
+  .month-row {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .month-row:last-child { border-bottom: none; }
+  .month-row-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .month-bar-track {
+    background: var(--bg);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .month-bar-fill {
+    background: var(--expense);
+    height: 100%;
+    border-radius: 4px;
+  }
+  .month-row-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .compare-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .diff-up { color: var(--expense); }
+  .diff-down { color: var(--income); }
+  .diff-flat { color: var(--muted); }
+
+  .import-hint {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
+  input[type="file"] {
+    width: 100%;
+    padding: 8px 0;
+    font-size: 13px;
+  }
+  .mapping-section {
+    margin-top: 16px;
+  }
+  .map-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  #previewBtn, #importBtn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    background: var(--accent);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #previewBtn:hover, #importBtn:hover { background: #1d4ed8; }
+  .preview-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  table.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .preview-table th, .preview-table td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .preview-table td:nth-child(3) { white-space: normal; min-width: 160px; }
+  .preview-table tr.duplicate { opacity: 0.5; }
+  .dup-tag {
+    font-size: 11px;
+    color: var(--muted);
+    display: block;
+  }
+  .preview-table select { width: auto; min-width: 120px; }
+  .preview-table .amt.income { color: var(--income); }
+  .preview-table .amt.expense { color: var(--expense); }
+
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #17181a;
@@ -220,6 +356,28 @@
     </div>
   </div>
 
+  <div class="section-title" style="margin-top:0;">
+    <span>Accounts</span>
+    <span class="muted-total" id="accountsTotal"></span>
+  </div>
+  <div class="accounts-grid">
+    <div class="card account-card">
+      <label class="label" for="checkingBalance">Checking</label>
+      <div class="account-input-wrap">
+        <span class="dollar-sign">$</span>
+        <input type="number" id="checkingBalance" step="0.01" placeholder="0.00">
+      </div>
+    </div>
+    <div class="card account-card">
+      <label class="label" for="savingsBalance">Savings</label>
+      <div class="account-input-wrap">
+        <span class="dollar-sign">$</span>
+        <input type="number" id="savingsBalance" step="0.01" placeholder="0.00">
+      </div>
+    </div>
+  </div>
+  <p class="import-hint" style="margin-top:-10px; margin-bottom:20px;">Enter these manually whenever you check your Navy Federal balances &mdash; they don't update automatically from transactions.</p>
+
   <div class="card">
     <form id="txForm">
       <div class="full type-toggle">
@@ -240,21 +398,71 @@
       </div>
       <div class="full">
         <label for="category">Category</label>
-        <select id="category">
-          <option>General</option>
-          <option>Food</option>
-          <option>Housing</option>
-          <option>Transportation</option>
-          <option>Utilities</option>
-          <option>Entertainment</option>
-          <option>Health</option>
-          <option>Savings</option>
-          <option>Salary</option>
-          <option>Other</option>
-        </select>
+        <select id="category"></select>
       </div>
       <button type="submit">Add Transaction</button>
     </form>
+  </div>
+
+  <div class="section-title"><span>Import Transactions</span></div>
+  <div class="card">
+    <p class="import-hint">Export a transaction history CSV from Navy Federal online banking, then upload it here. Nothing is uploaded anywhere &mdash; the file is read locally in your browser.</p>
+    <input type="file" id="csvFile" accept=".csv">
+    <div id="mappingSection" class="mapping-section" style="display:none;">
+      <div class="map-grid">
+        <div>
+          <label for="mapDate">Date column</label>
+          <select id="mapDate"></select>
+        </div>
+        <div>
+          <label for="mapDesc">Description column</label>
+          <select id="mapDesc"></select>
+        </div>
+      </div>
+      <div class="map-grid">
+        <div>
+          <label for="amountMode">Amount format</label>
+          <select id="amountMode">
+            <option value="single">Single amount column (negative = expense)</option>
+            <option value="split">Separate debit &amp; credit columns</option>
+          </select>
+        </div>
+        <div id="singleAmountWrap">
+          <label for="mapAmount">Amount column</label>
+          <select id="mapAmount"></select>
+        </div>
+        <div id="debitWrap" style="display:none;">
+          <label for="mapDebit">Debit column</label>
+          <select id="mapDebit"></select>
+        </div>
+        <div id="creditWrap" style="display:none;">
+          <label for="mapCredit">Credit column</label>
+          <select id="mapCredit"></select>
+        </div>
+      </div>
+      <button type="button" id="previewBtn">Preview Import</button>
+    </div>
+
+    <div id="previewSection" style="display:none;">
+      <div class="section-title" style="margin-top:20px;">
+        <span id="previewCount"></span>
+        <button type="button" id="importBtn">Import Selected</button>
+      </div>
+      <div class="preview-table-wrap">
+        <table class="preview-table" id="previewTable">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Category</th>
+            </tr>
+          </thead>
+          <tbody id="previewBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <div class="section-title">
@@ -271,6 +479,38 @@
   <div class="card by-category" id="byCategoryCard" style="display:none;">
     <div class="section-title" style="margin-top:0;">Spending by Category</div>
     <div id="byCategoryList"></div>
+  </div>
+
+  <div class="card monthly-card" id="monthlyCard" style="display:none;">
+    <div class="section-title" style="margin-top:0;">Monthly Analytics</div>
+    <div id="monthlyList"></div>
+
+    <div class="compare-section">
+      <div class="section-title" style="margin-top:0;"><span>Compare Two Months</span></div>
+      <div class="map-grid">
+        <div>
+          <label for="compareMonthA">Month A</label>
+          <select id="compareMonthA"></select>
+        </div>
+        <div>
+          <label for="compareMonthB">Month B</label>
+          <select id="compareMonthB"></select>
+        </div>
+      </div>
+      <div class="preview-table-wrap">
+        <table class="preview-table" id="compareTable">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th id="compareHeaderA">A</th>
+              <th id="compareHeaderB">B</th>
+              <th>Change</th>
+            </tr>
+          </thead>
+          <tbody id="compareBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
