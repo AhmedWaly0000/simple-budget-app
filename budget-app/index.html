@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simple Budget</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --border: #e3e5e9;
+    --text: #1c1e21;
+    --muted: #6b7280;
+    --income: #16a34a;
+    --expense: #dc2626;
+    --accent: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 8px 0 20px;
+  }
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .summary .card {
+    text-align: center;
+  }
+  .summary .label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .summary .value {
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  .value.income { color: var(--income); }
+  .value.expense { color: var(--expense); }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  form .full { grid-column: 1 / -1; }
+  label {
+    font-size: 12px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 4px;
+  }
+  input, select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+    color: var(--text);
+  }
+  .type-toggle {
+    display: flex;
+    gap: 8px;
+  }
+  .type-toggle button {
+    flex: 1;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .type-toggle button.active[data-type="income"] {
+    background: #ecfdf3;
+    border-color: var(--income);
+    color: var(--income);
+    font-weight: 600;
+  }
+  .type-toggle button.active[data-type="expense"] {
+    background: #fef2f2;
+    border-color: var(--expense);
+    color: var(--expense);
+    font-weight: 600;
+  }
+  button[type="submit"] {
+    grid-column: 1 / -1;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: var(--accent);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  button[type="submit"]:hover { background: #1d4ed8; }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 24px 0 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .filter {
+    font-size: 13px;
+    padding: 4px 8px;
+  }
+  ul.tx-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .tx {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+  }
+  .tx-left {
+    display: flex;
+    flex-direction: column;
+  }
+  .tx-desc { font-size: 14px; font-weight: 500; }
+  .tx-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .tx-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tx-amount { font-size: 14px; font-weight: 600; }
+  .tx-amount.income { color: var(--income); }
+  .tx-amount.expense { color: var(--expense); }
+  .tx-delete {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 4px;
+  }
+  .tx-delete:hover { color: var(--expense); }
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 20px 0;
+  }
+  .by-category {
+    margin-top: 24px;
+  }
+  .cat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .cat-row:last-child { border-bottom: none; }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181a;
+      --card: #212226;
+      --border: #33353a;
+      --text: #f0f0f0;
+      --muted: #9aa0a6;
+    }
+    input, select, .type-toggle button { background: #1b1c1f; color: var(--text); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Simple Budget</h1>
+
+  <div class="summary">
+    <div class="card">
+      <div class="label">Income</div>
+      <div class="value income" id="totalIncome">$0.00</div>
+    </div>
+    <div class="card">
+      <div class="label">Expenses</div>
+      <div class="value expense" id="totalExpense">$0.00</div>
+    </div>
+    <div class="card">
+      <div class="label">Balance</div>
+      <div class="value" id="totalBalance">$0.00</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <form id="txForm">
+      <div class="full type-toggle">
+        <button type="button" data-type="income" class="active">Income</button>
+        <button type="button" data-type="expense">Expense</button>
+      </div>
+      <div class="full">
+        <label for="desc">Description</label>
+        <input type="text" id="desc" placeholder="e.g. Groceries" required>
+      </div>
+      <div>
+        <label for="amount">Amount</label>
+        <input type="number" id="amount" step="0.01" min="0.01" placeholder="0.00" required>
+      </div>
+      <div>
+        <label for="date">Date</label>
+        <input type="date" id="date" required>
+      </div>
+      <div class="full">
+        <label for="category">Category</label>
+        <select id="category">
+          <option>General</option>
+          <option>Food</option>
+          <option>Housing</option>
+          <option>Transportation</option>
+          <option>Utilities</option>
+          <option>Entertainment</option>
+          <option>Health</option>
+          <option>Savings</option>
+          <option>Salary</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <button type="submit">Add Transaction</button>
+    </form>
+  </div>
+
+  <div class="section-title">
+    <span>Transactions</span>
+    <select class="filter" id="filterCategory">
+      <option value="">All categories</option>
+    </select>
+  </div>
+  <div class="card">
+    <ul class="tx-list" id="txList"></ul>
+    <div class="empty" id="emptyState" style="display:none;">No transactions yet. Add one above.</div>
+  </div>
+
+  <div class="card by-category" id="byCategoryCard" style="display:none;">
+    <div class="section-title" style="margin-top:0;">Spending by Category</div>
+    <div id="byCategoryList"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
