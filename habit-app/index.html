@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Momentum</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1857d6">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+
+<!-- iOS home screen app support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Momentum">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+
+<style>
+  :root {
+    --ground: #f4f5f0;
+    --ground-deep: #e8eae1;
+    --panel: #ffffff;
+    --line: #d7dbcd;
+    --ink: #101c14;
+    --ink-soft: #4d5c51;
+    --ink-faint: #8a9689;
+    --cobalt: #1857d6;
+    --turf: #1e8a5b;
+    --amber: #e08e17;
+    --danger: #c23b3b;
+    --board-bg: #0a1210;
+    --board-ink: #eef7ec;
+    --board-line: #24352c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0d130f;
+      --ground-deep: #0a0f0b;
+      --panel: #131b15;
+      --line: #26332a;
+      --ink: #e9f2e6;
+      --ink-soft: #a3b6a8;
+      --ink-faint: #67796c;
+      --cobalt: #5b8dff;
+      --turf: #3fbf85;
+      --amber: #f5ab3d;
+      --danger: #e2685f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0d130f; --ground-deep: #0a0f0b; --panel: #131b15; --line: #26332a;
+    --ink: #e9f2e6; --ink-soft: #a3b6a8; --ink-faint: #67796c;
+    --cobalt: #5b8dff; --turf: #3fbf85; --amber: #f5ab3d; --danger: #e2685f;
+  }
+  :root[data-theme="light"] {
+    --ground: #f4f5f0; --ground-deep: #e8eae1; --panel: #ffffff; --line: #d7dbcd;
+    --ink: #101c14; --ink-soft: #4d5c51; --ink-faint: #8a9689;
+    --cobalt: #1857d6; --turf: #1e8a5b; --amber: #e08e17; --danger: #c23b3b;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Helvetica Neue", Arial, "Segoe UI", sans-serif;
+    padding: 32px 18px 70px;
+    -webkit-tap-highlight-color: transparent;
+    padding-bottom: max(70px, env(safe-area-inset-bottom));
+  }
+  .display {
+    font-family: "Arial Narrow", "Helvetica Neue Condensed", "Segoe UI", Arial, sans-serif;
+    font-stretch: condensed;
+    font-weight: 800;
+  }
+  .mono-num { font-variant-numeric: tabular-nums; }
+
+  .wrap { max-width: 760px; margin: 0 auto; }
+
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 22px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    font-size: 13px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 6px;
+  }
+  h1.display {
+    font-size: 44px;
+    letter-spacing: 0.01em;
+    margin: 0;
+    line-height: 0.95;
+    text-wrap: balance;
+  }
+  .date { font-size: 13px; color: var(--ink-soft); text-align: right; }
+
+  .board {
+    background: var(--board-bg);
+    border-radius: 6px;
+    padding: 18px 22px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 26px;
+    box-shadow: 0 20px 40px -22px rgba(0,0,0,0.55);
+  }
+  .board-stat { text-align: center; padding: 4px 6px; }
+  .board-stat + .board-stat { border-left: 1px solid var(--board-line); }
+  .board-num {
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--board-ink);
+    line-height: 1;
+    letter-spacing: 0.01em;
+  }
+  .board-num.accent-cobalt { color: #6ea1ff; }
+  .board-num.accent-amber { color: #ffc266; }
+  .board-label {
+    margin-top: 6px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #9fb0a5;
+  }
+
+  form.add-form {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+  form.add-form .full { grid-column: 1 / -1; }
+  form.add-form label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 5px;
+    font-weight: 700;
+  }
+  form.add-form input,
+  form.add-form select {
+    width: 100%;
+    padding: 10px 11px;
+    border: 1.5px solid var(--line);
+    border-radius: 3px;
+    background: var(--ground);
+    color: var(--ink);
+    font-size: 16px;
+    font-family: inherit;
+  }
+  form.add-form input:focus,
+  form.add-form select:focus {
+    outline: 2px solid var(--cobalt);
+    outline-offset: 1px;
+  }
+  .add-submit {
+    grid-column: 1 / -1;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--ground);
+    border: none;
+    padding: 12px;
+    cursor: pointer;
+    margin-top: 2px;
+  }
+  .add-submit:hover { opacity: 0.88; }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 0 0 14px;
+    gap: 10px;
+  }
+  .section-title.display {
+    font-size: 18px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .section-sub { font-size: 12px; color: var(--ink-faint); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    margin-bottom: 34px;
+  }
+
+  .empty {
+    color: var(--ink-faint);
+    font-size: 13px;
+    padding: 18px 0;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px 16px 14px 20px;
+    position: relative;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 5px;
+    background: var(--cat-color, var(--cobalt));
+    border-radius: 4px 0 0 4px;
+  }
+  .card[data-cat="faith"] { --cat-color: var(--cobalt); }
+  .card[data-cat="body"] { --cat-color: var(--turf); }
+  .card[data-cat="craft"] { --cat-color: var(--amber); }
+
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .card-name-row { display: flex; align-items: center; gap: 8px; }
+  .card-name { font-size: 16px; font-weight: 700; line-height: 1.25; }
+  .card-del {
+    background: none; border: none; color: var(--ink-faint);
+    font-size: 17px; line-height: 1; cursor: pointer;
+    padding: 11px; margin: -11px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card-del:hover { color: var(--danger); }
+  .card-cat {
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--cat-color, var(--cobalt)); margin-top: 4px; font-weight: 700;
+  }
+  .card-streak { text-align: right; flex: none; }
+  .card-streak .num { font-size: 30px; font-weight: 800; line-height: 1; color: var(--ink); }
+  .card-streak .lbl { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
+
+  .segs { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin: 14px 0 12px; }
+  .segs button {
+    height: 38px;
+    background: var(--ground-deep);
+    border: none;
+    display: block;
+    padding: 0;
+    cursor: pointer;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .segs button.on { background: var(--cat-color, var(--cobalt)); }
+  .segs button.today::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 2px var(--ink);
+    opacity: 0.35;
+  }
+  .segs button.today.on::after { opacity: 0.55; }
+
+  .card-foot { display: flex; justify-content: space-between; align-items: center; }
+  .card-pct { font-size: 11px; color: var(--ink-soft); font-weight: 600; }
+  .mark-btn {
+    font-family: inherit; font-weight: 800; font-size: 11px; letter-spacing: 0.08em;
+    text-transform: uppercase; background: transparent; color: var(--cat-color, var(--cobalt));
+    border: 1.5px solid var(--cat-color, var(--cobalt)); padding: 10px 14px; cursor: pointer;
+    min-height: 40px; display: inline-flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card.done .mark-btn { background: var(--cat-color, var(--cobalt)); color: var(--panel); }
+
+  .bench-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin: 0 0 8px; }
+  .bench-card {
+    flex: none; width: 200px; background: var(--panel);
+    border: 1px dashed var(--line); border-radius: 4px; padding: 14px;
+  }
+  .bench-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+  .bench-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .bench-meta { font-size: 11px; color: var(--ink-faint); margin-bottom: 12px; }
+  .bench-actions { display: flex; gap: 6px; }
+  .play-btn {
+    font-family: inherit; font-weight: 800; font-size: 10.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; background: var(--ink); color: var(--ground);
+    border: none; padding: 10px; cursor: pointer; flex: 1;
+    min-height: 40px; -webkit-tap-highlight-color: transparent;
+  }
+  .bench-del {
+    background: none; border: 1.5px solid var(--line); color: var(--ink-faint);
+    font-size: 13px; cursor: pointer; padding: 0 9px;
+    min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .bench-del:hover { color: var(--danger); border-color: var(--danger); }
+
+  @media (max-width: 480px) {
+    .board { grid-template-columns: 1fr; }
+    .board-stat + .board-stat { border-left: none; border-top: 1px solid var(--board-line); padding-top: 10px; }
+    h1.display { font-size: 34px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <p class="brand">Training Log</p>
+      <h1 class="display">MOMENTUM</h1>
+    </div>
+    <div class="date" id="dateLabel"></div>
+  </div>
+
+  <div class="board">
+    <div class="board-stat">
+      <div class="board-num mono-num" id="doneNum">0/0</div>
+      <div class="board-label">Done Today</div>
+    </div>
+    <div class="board-stat">
+      <div class="board-num mono-num accent-amber" id="bestStreakNum">0</div>
+      <div class="board-label">Best Streak</div>
+    </div>
+    <div class="board-stat">
+      <div class="board-num mono-num accent-cobalt" id="avgRateNum">0%</div>
+      <div class="board-label">Avg Completion</div>
+    </div>
+  </div>
+
+  <form class="add-form" id="addForm">
+    <div class="full">
+      <label for="habitName">Habit</label>
+      <input type="text" id="habitName" placeholder="e.g. Sprint Training" required>
+    </div>
+    <div>
+      <label for="habitCategory">Category</label>
+      <select id="habitCategory">
+        <option value="faith">Faith &amp; Growth</option>
+        <option value="body">Body &amp; Training</option>
+        <option value="craft">Craft &amp; Ministry</option>
+      </select>
+    </div>
+    <div>
+      <label for="habitCadence">Cadence</label>
+      <select id="habitCadence">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+      </select>
+    </div>
+    <div class="full">
+      <label for="habitStatus">Status</label>
+      <select id="habitStatus">
+        <option value="active">Put in play now</option>
+        <option value="planned">Bench it for later</option>
+      </select>
+    </div>
+    <button type="submit" class="add-submit">＋ Add Habit</button>
+  </form>
+
+  <div class="section-head">
+    <p class="section-title display">In Play</p>
+    <p class="section-sub">tap a day to log it</p>
+  </div>
+  <div class="grid" id="cardGrid"></div>
+  <p class="empty" id="activeEmpty" style="display:none;">Nothing in play yet — add a habit above.</p>
+
+  <div class="section-head">
+    <p class="section-title display">On the Bench</p>
+    <p class="section-sub">warming up, not yet in play</p>
+  </div>
+  <div class="bench-scroll" id="benchScroll"></div>
+  <p class="empty" id="benchEmpty" style="display:none;">Nothing on the bench.</p>
+</div>
+
+<script src="app.js"></script>
+<script>
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
